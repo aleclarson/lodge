@@ -1,6 +1,6 @@
 {
   "name": "lodge",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "lib/lodge",
   "license": "MIT",
   "repository": "https://github.com/aleclarson/lodge.git",
