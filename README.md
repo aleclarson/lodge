@@ -34,7 +34,7 @@ log2('something useful in debugging');
 log2.warn('foo is deprecated');
 ```
 
-The `DEBUG` environment variable is flexible. `DEBUG=1` enables all debug logs. The asterisk (`*`) allows for globbing. For example, `a*` matches both `abc` and `acb` but not `cba`. The `--debug` CLI flag is identical to `DEBUG=1`.
+The `DEBUG` environment variable is flexible. `DEBUG=1` enables all debug logs. The asterisk (`*`) allows for globbing. For example, `a*` matches both `abc` and `acb` but not `cba`. The comma (`,`) lets you specify multiple globs. The `--debug` CLI flag is identical to `DEBUG=1`.
 
 Use `NO_COLOR=1` to disable ANSI colors. The `--no-color` CLI flag also works.
 
