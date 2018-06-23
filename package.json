@@ -1,0 +1,17 @@
+{
+  "name": "lodge",
+  "version": "0.0.1",
+  "main": "lib/lodge",
+  "scripts": {
+    "build": "coffee-build src -o lib",
+    "prepublishOnly": "prepv -i || true"
+  },
+  "devDependencies": {
+    "coffeescript": "^2.3.0",
+    "wch-coffee": "^0.2.0"
+  },
+  "dependencies": {
+    "ansi-256-colors": "^1.1.0",
+    "has-flag": "^3.0.0"
+  }
+}
