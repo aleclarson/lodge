@@ -9,19 +9,15 @@ colorize quiet, false
 
 if !hasFlag('--quiet') and env.QUIET isnt '1'
 
-  colorEnabled =
-    if isTTY
-      !hasFlag('--no-color') and env.NO_COLOR isnt '1'
-    else env.COLOR is '1'
-
   warningsEnabled =
     !hasFlag('--no-warnings') and env.NO_WARNINGS isnt '1'
 
-  console.log 'colorEnabled:', colorEnabled
-  console.log 'isTTY:', isTTY
-
   if typeof document is 'undefined'
-    {isTTY} = process.stdout
+
+    colorEnabled =
+      if process.stdout.isTTY
+        !hasFlag('--no-color') and env.NO_COLOR isnt '1'
+      else env.COLOR is '1'
 
     inspect = do ->
       util = require 'util'
@@ -67,7 +63,7 @@ if !hasFlag('--quiet') and env.QUIET isnt '1'
 
   else
     log = console.log.bind()
-    colorize log, colorEnabled
+    colorize log, false
     log.warn =
       if warningsEnabled
       then console.warn
