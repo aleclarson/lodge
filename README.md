@@ -34,15 +34,23 @@ log2('something useful in debugging');
 log2.warn('foo is deprecated');
 ```
 
+The built-in `console` functions are used when the global `window` variable exists. Otherwise, functions with similar behavior are used with the `process.stdout` or `process.stderr` streams.
+
+### Environment variables
+
+Use `QUIET=1` to disable all messages. The `--quiet` CLI flag also works.
+
 The `DEBUG` environment variable is flexible. `DEBUG=1` enables all debug logs. The asterisk (`*`) allows for globbing. For example, `a*` matches both `abc` and `acb` but not `cba`. The comma (`,`) lets you specify multiple globs. The `--debug` CLI flag is identical to `DEBUG=1`.
 
 Use `NO_COLOR=1` to disable ANSI colors. The `--no-color` CLI flag also works.
 
 Use `NO_WARNINGS=1` to disable warning messages. The `--no-warnings` CLI flag also works.
 
-Use `QUIET=1` to disable all messages. The `--quiet` CLI flag also works.
+Use `TRACE_WARNINGS=1` to attach a stack trace to each warning.
 
-The built-in `console` functions are used when the global `document` variable exists.
+For browser environments, you can set these properties on the `window` object before importing this library.
+
+### Colors
 
 The following ANSI colors are available: (256 color spectrum)
 - red
@@ -58,3 +66,15 @@ The following ANSI colors are available: (256 color spectrum)
 - black
 
 The non-grayscale colors all have light variants available as `lred`, `lblue`, `lgreen`, etc.
+
+### Prefixes
+
+You can set the `prefix` method of the main logger (or a namespace) if you want to prepend a string to every message.
+
+```js
+const foo = log.debug('foo');
+foo.prefix = () => `[${new Date().toISOString()}] foo:`
+
+foo('test') // => '[2018-06-28T20:03:48.892Z] foo: test'
+```
+
