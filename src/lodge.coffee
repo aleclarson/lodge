@@ -1,19 +1,26 @@
 colorize = require './colorize'
 hasFlag = require 'has-flag'
 
-{env} = process
+env =
+  if typeof process isnt 'undefined'
+  then process.env
+  else window
 
-CLI =
-  typeof document is 'undefined'
+isCLI =
+  typeof window is 'undefined'
 
-QUIET =
+hasFlag =
+  if isCLI then require 'has-flag'
+  else -> false
+
+isQuiet =
   hasFlag('--quiet') or env.QUIET is '1'
 
 NO_WARNINGS =
   hasFlag('--no-warnings') or env.NO_WARNINGS is '1'
 
 NO_COLOR =
-  if CLI and process.stdout.isTTY
+  if isCLI and process.stdout.isTTY
     hasFlag('--no-color') or env.NO_COLOR is '1'
   else env.COLOR isnt '1'
 
@@ -32,10 +39,10 @@ methods =
   error: null
   write: null
 
-if !QUIET
+if !isQuiet
   colorize methods, !NO_COLOR
 
-if CLI
+if isCLI
 
   inspect = do ->
     util = require 'util'
@@ -82,7 +89,7 @@ if CLI
   methods.error =
     createWriter process.stderr, quiet.red('error: ')
 
-  if !QUIET
+  if !isQuiet
     methods.write = createWriter process.stdout
 
   if TRACE_WARNINGS then do ->
@@ -117,7 +124,7 @@ else
   methods.error =
     createWriter console.error
 
-  if !QUIET
+  if !isQuiet
     methods.write = createWriter console.log
 
 # Warnings and errors are not disabled by --quiet
@@ -127,10 +134,9 @@ quiet.error = methods.error
 # Ignore any property mutation.
 Object.freeze quiet
 
-if QUIET
+if isQuiet
   log = -> # no-op
   Object.assign log, quiet
-  log.debug = -> quiet
 
 else
   createLog = ->
@@ -139,14 +145,16 @@ else
 
   log = createLog()
 
-  if hasFlag('--debug') or /^(\*|1)$/.test env.DEBUG
-    isDebug = -> true
-  else
-    env.DEBUG = env.DEBUG.replace(/\*/g, '.*').replace(/,/g, '|')
-    DEBUG_RE = new RegExp '^(' + env.DEBUG + ')$'
-    isDebug = (id) -> DEBUG_RE.test id
+  if DEBUG = env.DEBUG
+    if hasFlag('--debug') or /^(\*|1)$/.test DEBUG
+      DEBUG = test: -> true
+    else
+      DEBUG = DEBUG.replace(/\*/g, '.*').replace(/,/g, '|')
+      DEBUG = new RegExp '^(' + DEBUG + ')$'
 
-  log.debug = (id) ->
-    isDebug(id) and createLog() or quiet
+    log.debug = (id) ->
+      DEBUG.test(id) and createLog() or quiet
+
+log.debug or= -> quiet
 
 module.exports = log
