@@ -3,76 +3,141 @@ hasFlag = require 'has-flag'
 
 {env} = process
 
-quiet = ->
-quiet.debug = -> quiet
-colorize quiet, false
+CLI =
+  typeof document is 'undefined'
 
-if !hasFlag('--quiet') and env.QUIET isnt '1'
+QUIET =
+  hasFlag('--quiet') or env.QUIET is '1'
 
-  warningsEnabled =
-    !hasFlag('--no-warnings') and env.NO_WARNINGS isnt '1'
+NO_WARNINGS =
+  hasFlag('--no-warnings') or env.NO_WARNINGS is '1'
 
-  if typeof document is 'undefined'
+NO_COLOR =
+  if CLI and process.stdout.isTTY
+    hasFlag('--no-color') or env.NO_COLOR is '1'
+  else env.COLOR isnt '1'
 
-    colorEnabled =
-      if process.stdout.isTTY
-        !hasFlag('--no-color') and env.NO_COLOR isnt '1'
-      else env.COLOR is '1'
+TRACE_WARNINGS =
+  if !NO_WARNINGS
+    hasFlag('--trace-warnings') or env.TRACE_WARNINGS is '1'
+  else false
 
-    inspect = do ->
-      util = require 'util'
-      opts = colors: colorEnabled, depth: 1
-      (arg) -> util.inspect arg, opts
+quiet = -> # no-op
+quiet.write = -> # no-op
 
-    format = (arg, type) ->
-      switch type
-        when '%s' then String arg
-        when '%O' then inspect arg
-        when '%d', '%f' then Number arg
-        when '%i' then parseInt arg
-        else arg
+colorize quiet, !NO_COLOR
 
-    createLog = (stream, prefix) -> (...args) ->
-      i = 0
-      output = prefix
+methods =
+  warn: null
+  error: null
+  write: null
 
-      if typeof args[0] is 'string'
-        input = args[i++]
-        offset = 0
-        pattern = /%[dfisO]/g
-        while match = pattern.exec input
-          arg = args[i++]
-          output += input.slice(offset, match.index) + format arg, match[0]
-          offset = match.index + 2
-        output += input.slice offset
+if !QUIET
+  colorize methods, !NO_COLOR
 
-      while i < args.length
-        output += ' ' if i > 0
-        output += inspect args[i++]
+if CLI
 
-      stream.write output + '\n'
+  inspect = do ->
+    util = require 'util'
+    opts = colors: !NO_COLOR, depth: 1
+    (arg) -> util.inspect arg, opts
+
+  format = (arg, type) ->
+    switch type
+      when '%s' then String arg
+      when '%O' then inspect arg
+      when '%d', '%f' then Number arg
+      when '%i' then parseInt arg
+      else arg
+
+  createWriter = (stream, prefix) -> (...args) ->
+    i = 0
+    output =
+      if prefix
+      then @prefix and @prefix() + ' ' + prefix or prefix
+      else @prefix and @prefix() or ''
+
+    if typeof args[0] is 'string'
+      input = args[i++]
+      offset = 0
+      pattern = /%[dfisO]/g
+      while match = pattern.exec input
+        arg = args[i++]
+        output += input.slice(offset, match.index) + format arg, match[0]
+        offset = match.index + 2
+      output += input.slice offset
+
+    while i < args.length
+      output += ' ' if i > 0
+      output += inspect args[i++]
+
+    stream.write output + '\n'
+    return
+
+  methods.warn =
+    if !NO_WARNINGS
+    then createWriter process.stdout, quiet.yellow('warn: ')
+    else -> # no-op
+
+  methods.error =
+    createWriter process.stderr, quiet.red('error: ')
+
+  if !QUIET
+    methods.write = createWriter process.stdout
+
+  if TRACE_WARNINGS then do ->
+    {warn} = methods
+    methods.warn = ->
+      warn ...arguments
+
+      err = new Error
+      Error.captureStackTrace err, arguments.callee
+      stack = err.stack
+      console.log stack.slice stack.indexOf('\n') + 1
       return
 
-    log = createLog process.stdout, ''
-    colorize log, colorEnabled
-    log.warn =
-      if warningsEnabled
-      then createLog process.stdout, log.yellow('⚠️  warn: ')
-      else -> # no-op
-    log.error = createLog process.stderr, log.red('🔥 error: ')
+else
+  createWriter = (write) -> ($1, ...args) ->
+    if !$0 = @prefix
+      write $1, ...args
+      return
 
-  else
-    log = console.log.bind()
-    colorize log, false
-    log.warn =
-      if warningsEnabled
-      then console.warn
-      else -> # no-op
-    log.error = console.error
+    if typeof $1 isnt 'string'
+      write $0, $1, ...args
+      return
 
-  # Warnings and errors are not disabled by --quiet
-  quiet.warn = log.warn
-  quiet.error = log.error
+    write $0 + ' ' + $1, ...args
+    return
+
+  methods.warn =
+    if !NO_WARNINGS
+    then createWriter console.warn
+    else -> # no-op
+
+  methods.error =
+    createWriter console.error
+
+  if !QUIET
+    methods.write = createWriter console.log
+
+# Warnings and errors are not disabled by --quiet
+quiet.warn = methods.warn
+quiet.error = methods.error
+
+# Ignore any property mutation.
+Object.freeze quiet
+
+if QUIET
+  log = -> # no-op
+  Object.assign log, quiet
+  log.debug = -> quiet
+
+else
+  createLog = ->
+    log = (...args) -> log.write ...args
+    Object.assign log, methods
+
+  log = createLog()
 
   if hasFlag('--debug') or /^(\*|1)$/.test env.DEBUG
     isDebug = -> true
@@ -82,6 +147,6 @@ if !hasFlag('--quiet') and env.QUIET isnt '1'
     isDebug = (id) -> DEBUG_RE.test id
 
   log.debug = (id) ->
-    if isDebug id then log else quiet
+    isDebug(id) and createLog() or quiet
 
 module.exports = log
