@@ -1,6 +1,8 @@
 colorize = require './colorize'
 hasFlag = require 'has-flag'
 
+def = Object.defineProperty
+
 env =
   if typeof process isnt 'undefined'
   then process.env
@@ -38,9 +40,24 @@ methods =
   warn: null
   error: null
   write: null
+  prefix: null
 
 if !isQuiet
   colorize methods, !NO_COLOR
+  methods.prefix = (prefix) ->
+    def this, '_prefix',
+      value: typeof prefix is 'function' and prefix or -> prefix
+      configurable: true
+
+getPrefix = (self, label) ->
+  str =
+    if label
+    then self._prefix and self._prefix() + ' ' + label or label
+    else self._prefix and self._prefix() or ''
+
+  if log isnt self and log._prefix
+    return str and log._prefix() + ' ' + str or log._prefix()
+  return str
 
 if isCLI
 
@@ -57,12 +74,10 @@ if isCLI
       when '%i' then parseInt arg
       else arg
 
-  createWriter = (stream, prefix) -> (...args) ->
+  createWriter = (stream, label) -> (...args) ->
     i = 0
-    output =
-      if prefix
-      then @prefix and @prefix() + ' ' + prefix or prefix
-      else @prefix and @prefix() or ''
+    prefix = getPrefix this, label
+    output = ''
 
     if typeof args[0] is 'string'
       input = args[i++]
@@ -78,16 +93,17 @@ if isCLI
       output += ' ' if i > 0
       output += inspect args[i++]
 
+    output and= prefix + ' ' + output
     stream.write output + '\n'
     return
 
   methods.warn =
     if !NO_WARNINGS
-    then createWriter process.stdout, quiet.yellow('warn: ')
+    then createWriter process.stdout, quiet.yellow('warn:')
     else -> # no-op
 
   methods.error =
-    createWriter process.stderr, quiet.red('error: ')
+    createWriter process.stderr, quiet.red('error:')
 
   if !isQuiet
     methods.write = createWriter process.stdout
@@ -105,8 +121,12 @@ if isCLI
 
 else
   createWriter = (write) -> ($1, ...args) ->
-    if !$0 = @prefix
+    if !$0 = getPrefix this
       write $1, ...args
+      return
+
+    if !args.length and $1 is ''
+      write $1
       return
 
     if typeof $1 isnt 'string'
@@ -156,6 +176,7 @@ else
       DEBUG.test(id) and createLog() or quiet
 
 log.debug or= -> quiet
+log.prefix or= -> this
 log.create or=
   if isQuiet then -> quiet
   else createLog
