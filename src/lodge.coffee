@@ -41,6 +41,7 @@ methods =
   error: null
   write: null
   prefix: null
+  clear: null
 
 if !isQuiet
   colorize methods, !NO_COLOR
@@ -107,6 +108,12 @@ if isCLI
 
   if !isQuiet
     methods.write = createWriter process.stdout
+    methods.clear = ->
+      # print line breaks until the screen is empty
+      process.stdout.write '\x33[2J'
+      # clear the scroll history
+      process.stdout.write '\u001b[H\u001b[2J\u001b[3J'
+      return
 
   if TRACE_WARNINGS then do ->
     {warn} = methods
@@ -146,6 +153,7 @@ else
 
   if !isQuiet
     methods.write = createWriter console.log
+    methods.clear = console.clear
 
 # Warnings and errors are not disabled by --quiet
 quiet.warn = methods.warn
