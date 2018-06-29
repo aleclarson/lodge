@@ -134,15 +134,15 @@ quiet.error = methods.error
 # Ignore any property mutation.
 Object.freeze quiet
 
+createLog = ->
+  log = (...args) -> log.write ...args
+  Object.assign log, methods
+
 if isQuiet
   log = -> # no-op
   Object.assign log, quiet
 
 else
-  createLog = ->
-    log = (...args) -> log.write ...args
-    Object.assign log, methods
-
   log = createLog()
 
   if DEBUG = env.DEBUG
