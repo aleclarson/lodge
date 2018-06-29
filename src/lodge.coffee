@@ -156,5 +156,8 @@ else
       DEBUG.test(id) and createLog() or quiet
 
 log.debug or= -> quiet
+log.create or=
+  if isQuiet then -> quiet
+  else createLog
 
 module.exports = log
