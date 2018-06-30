@@ -17,23 +17,25 @@ hasFlag =
 isQuiet =
   hasFlag('--quiet') or env.QUIET is '1'
 
-NO_WARNINGS =
-  hasFlag('--no-warnings') or env.NO_WARNINGS is '1'
-
 NO_COLOR =
   if isCLI and process.stdout.isTTY
     hasFlag('--no-color') or env.NO_COLOR is '1'
   else env.COLOR isnt '1'
+
+NO_WARNINGS =
+  hasFlag('--no-warnings') or env.NO_WARNINGS is '1'
 
 TRACE_WARNINGS =
   if !NO_WARNINGS
     hasFlag('--trace-warnings') or env.TRACE_WARNINGS is '1'
   else false
 
+
 quiet = -> # no-op
 quiet.write = -> # no-op
 
 colorize quiet, false
+
 
 methods =
   warn: null
@@ -43,25 +45,10 @@ methods =
   prefix: null
   clear: null
 
-if !isQuiet
-  colorize methods, !NO_COLOR
-  methods.prefix = (prefix) ->
-    def this, '_prefix',
-      value: typeof prefix is 'function' and prefix or -> prefix
-      configurable: true
+createLog = ->
+  log = (...args) -> log.write ...args
+  Object.assign log, methods
 
-else methods.prefix = -> this
-
-join = (a, b) ->
-  if a then a + ' ' + b else b
-
-getPrefix = (self, label) ->
-  prefix = self._prefix?() or ''
-  if self isnt log and log._prefix
-    prefix = join log._prefix(), prefix
-  if label
-  then join prefix, label
-  else prefix
 
 if isCLI
 
@@ -107,7 +94,7 @@ if isCLI
   methods.warn =
     if !NO_WARNINGS
     then createWriter process.stdout, quiet.yellow('warn:')
-    else -> # no-op
+    else quiet.write
 
   methods.error =
     createWriter process.stderr, quiet.red('error:')
@@ -152,7 +139,7 @@ else
   methods.warn =
     if !NO_WARNINGS
     then createWriter console.warn
-    else -> # no-op
+    else quiet.write
 
   methods.error =
     createWriter console.error
@@ -161,6 +148,39 @@ else
     methods.write = createWriter console.log
     methods.clear = console.clear
 
+
+if isQuiet or !DEBUG = env.DEBUG
+  methods.debug = -> quiet
+else if hasFlag('--debug') or /^(\*|1)$/.test DEBUG
+  methods.debug = createLog
+else
+  DEBUG = DEBUG.replace(/\*/g, '.*').replace(/,/g, '|')
+  DEBUG = new RegExp '^(' + DEBUG + ')$'
+  methods.debug = (id) ->
+    DEBUG.test(id) and createLog() or quiet
+
+
+join = (a, b) ->
+  if a then a + ' ' + b else b
+
+getPrefix = (self, label) ->
+  prefix = self._prefix?() or ''
+  if self isnt log and log._prefix
+    prefix = join log._prefix(), prefix
+  if label
+  then join prefix, label
+  else prefix
+
+if isQuiet
+  methods.prefix = -> this
+else
+  colorize methods, !NO_COLOR
+  methods.prefix = (prefix) ->
+    def this, '_prefix',
+      value: typeof prefix is 'function' and prefix or -> prefix
+      configurable: true
+
+
 # Warnings and errors are not disabled by --quiet
 quiet.warn = methods.warn
 quiet.error = methods.error
@@ -168,22 +188,6 @@ quiet.error = methods.error
 # Ignore any property mutation.
 Object.freeze quiet
 
-createLog = ->
-  log = (...args) -> log.write ...args
-  Object.assign log, methods
-
-if !isQuiet and DEBUG = env.DEBUG
-
-  if hasFlag('--debug') or /^(\*|1)$/.test DEBUG
-    DEBUG = test: -> true
-  else
-    DEBUG = DEBUG.replace(/\*/g, '.*').replace(/,/g, '|')
-    DEBUG = new RegExp '^(' + DEBUG + ')$'
-
-  methods.debug = (id) ->
-    DEBUG.test(id) and createLog() or quiet
-
-else methods.debug = -> quiet
 
 if isQuiet
   log = -> # no-op
