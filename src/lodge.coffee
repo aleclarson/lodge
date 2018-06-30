@@ -1,5 +1,4 @@
 colorize = require './colorize'
-hasFlag = require 'has-flag'
 
 def = Object.defineProperty
 
