@@ -24,6 +24,9 @@ log.warn('be careful');
 // print to stderr
 log.error('oh crap');
 
+// clear the console/terminal
+log.clear();
+
 // namespaces
 const log2 = log.debug('foo');
 
@@ -32,9 +35,15 @@ log2('something useful in debugging');
 
 // DEBUG=1 is not required to see warnings/errors
 log2.warn('foo is deprecated');
+
+// prefixes
+log2.prefix('[foo]');
+log2.prefix(() => `[${new Date().toISOString()}]`);
 ```
 
 The built-in `console` functions are used when the global `window` variable exists. Otherwise, functions with similar behavior are used with the `process.stdout` or `process.stderr` streams.
+
+All loggers inherit the prefix of the main logger, but can also have their own prefix at the same time.
 
 ### Environment variables
 
