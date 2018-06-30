@@ -1,4 +1,4 @@
-# lodge v0.0.4
+# lodge v0.0.5
 
 ```js
 const log = require('lodge');
