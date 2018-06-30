@@ -33,7 +33,7 @@ TRACE_WARNINGS =
 quiet = -> # no-op
 quiet.write = -> # no-op
 
-colorize quiet, !NO_COLOR
+colorize quiet, false
 
 methods =
   warn: null
