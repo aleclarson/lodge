@@ -92,7 +92,11 @@ if isCLI
       output += input.slice offset
 
     while i < args.length
-      output = join output, args[i++]
+      arg = args[i++]
+      if typeof arg is 'string'
+        continue if arg.length is 0
+      else arg = inspect arg
+      output = join output, arg
 
     output and= join prefix, output
     stream.write output + '\n'
