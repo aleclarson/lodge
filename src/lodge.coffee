@@ -39,6 +39,7 @@ methods =
   warn: null
   error: null
   write: null
+  debug: null
   prefix: null
   clear: null
 
@@ -48,6 +49,8 @@ if !isQuiet
     def this, '_prefix',
       value: typeof prefix is 'function' and prefix or -> prefix
       configurable: true
+
+else methods.prefix = -> this
 
 join = (a, b) ->
   if a then a + ' ' + b else b
@@ -169,6 +172,19 @@ createLog = ->
   log = (...args) -> log.write ...args
   Object.assign log, methods
 
+if !isQuiet and DEBUG = env.DEBUG
+
+  if hasFlag('--debug') or /^(\*|1)$/.test DEBUG
+    DEBUG = test: -> true
+  else
+    DEBUG = DEBUG.replace(/\*/g, '.*').replace(/,/g, '|')
+    DEBUG = new RegExp '^(' + DEBUG + ')$'
+
+  methods.debug = (id) ->
+    DEBUG.test(id) and createLog() or quiet
+
+else methods.debug = -> quiet
+
 if isQuiet
   log = -> # no-op
   Object.assign log, quiet
@@ -176,18 +192,6 @@ if isQuiet
 else
   log = createLog()
 
-  if DEBUG = env.DEBUG
-    if hasFlag('--debug') or /^(\*|1)$/.test DEBUG
-      DEBUG = test: -> true
-    else
-      DEBUG = DEBUG.replace(/\*/g, '.*').replace(/,/g, '|')
-      DEBUG = new RegExp '^(' + DEBUG + ')$'
-
-    log.debug = (id) ->
-      DEBUG.test(id) and createLog() or quiet
-
-log.debug or= -> quiet
-log.prefix or= -> this
 log.create or=
   if isQuiet then -> quiet
   else createLog
