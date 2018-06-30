@@ -82,10 +82,9 @@ if isCLI
 
     while i < args.length
       arg = args[i++]
-      if typeof arg is 'string'
-        continue if arg.length is 0
-      else arg = inspect arg
-      output = join output, arg
+      output = join output,
+        if typeof arg is 'string'
+        then arg else inspect arg
 
     output and= join prefix, output
     stream.write output + '\n'
