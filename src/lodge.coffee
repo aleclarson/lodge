@@ -185,6 +185,11 @@ else
 quiet.warn = methods.warn
 quiet.error = methods.error
 
+# Ensure all expected methods exist
+quiet.debug = methods.debug
+quiet.prefix = methods.prefix
+quiet.clear = quiet.write
+
 # Ignore any property mutation.
 Object.freeze quiet
 
