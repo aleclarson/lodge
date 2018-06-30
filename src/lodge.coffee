@@ -50,15 +50,16 @@ if !isQuiet
       value: typeof prefix is 'function' and prefix or -> prefix
       configurable: true
 
-getPrefix = (self, label) ->
-  str =
-    if label
-    then self._prefix and self._prefix() + ' ' + label or label
-    else self._prefix and self._prefix() or ''
+join = (a, b) ->
+  if a then a + ' ' + b else b
 
-  if log isnt self and log._prefix
-    return str and log._prefix() + ' ' + str or log._prefix()
-  return str
+getPrefix = (self, label) ->
+  prefix = self._prefix?() or ''
+  if self isnt log and log._prefix
+    prefix = join log._prefix(), prefix
+  if label
+  then join prefix, label
+  else prefix
 
 if isCLI
 
@@ -91,10 +92,9 @@ if isCLI
       output += input.slice offset
 
     while i < args.length
-      output += ' ' if i > 0
-      output += inspect args[i++]
+      output = join output, args[i++]
 
-    output and= prefix + ' ' + output
+    output and= join prefix, output
     stream.write output + '\n'
     return
 
