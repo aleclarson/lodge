@@ -188,12 +188,9 @@ else methods.debug = -> quiet
 if isQuiet
   log = -> # no-op
   Object.assign log, quiet
-
+  log.create = -> quiet
 else
   log = createLog()
-
-log.create or=
-  if isQuiet then -> quiet
-  else createLog
+  log.create = createLog
 
 module.exports = log
