@@ -32,9 +32,10 @@ module.exports = (log, colorEnabled) ->
     ansi = require 'ansi-256-colors'
     Object.keys(colors).forEach (key) ->
       color = ansi.fg.getRgb ...colors[key]
-      log[key] = (msg) -> color + msg + ansi.reset
-    return
+      log[key] = (msg) ->
+        if msg is '' then msg else color + msg + ansi.reset
+      return
 
-  Object.keys(colors).forEach (key) ->
+  else Object.keys(colors).forEach (key) ->
     log[key] = noop
-  return
+    return
