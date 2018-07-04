@@ -31,8 +31,11 @@ TRACE_WARNINGS =
   else false
 
 
+undef = -> # no-op
+muted = -> quiet
+
 quiet = -> # no-op
-quiet.write = -> # no-op
+quiet.write = undef
 
 colorize quiet, !NO_COLOR
 
@@ -93,7 +96,7 @@ if isCLI
   methods.warn =
     if !NO_WARNINGS
     then createWriter process.stdout, quiet.yellow('warn:')
-    else quiet.write
+    else undef
 
   methods.error =
     createWriter process.stderr, quiet.red('error:')
@@ -138,7 +141,7 @@ else
   methods.warn =
     if !NO_WARNINGS
     then createWriter console.warn
-    else quiet.write
+    else undef
 
   methods.error =
     createWriter console.error
@@ -149,7 +152,7 @@ else
 
 
 if isQuiet or !DEBUG = env.DEBUG
-  methods.debug = -> quiet
+  methods.debug = muted
 else if hasFlag('--debug') or /^(\*|1)$/.test DEBUG
   methods.debug = createLog
 else
@@ -186,8 +189,8 @@ quiet.error = methods.error
 
 # Ensure all expected methods exist
 quiet.debug = methods.debug
-quiet.prefix = methods.prefix
-quiet.clear = quiet.write
+quiet.prefix = muted
+quiet.clear = undef
 
 # Ignore any property mutation.
 Object.freeze quiet
@@ -196,7 +199,7 @@ Object.freeze quiet
 if isQuiet
   log = -> # no-op
   Object.assign log, quiet
-  log.create = -> quiet
+  log.create = muted
 else
   log = createLog()
   log.create = createLog
