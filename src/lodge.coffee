@@ -47,10 +47,25 @@ methods =
   debug: null
   prefix: null
   clear: null
+  trace: null
 
 createLog = ->
   log = (...args) -> log.write ...args
   Object.assign log, methods
+
+
+methods.trace = do ->
+  home = null
+  if isCLI then do ->
+    mappedChars = '.': '\\.', '\\': '\\\\'
+    home = require('os').homedir() + require('path').sep
+    home = home.replace /[\.\\]/g, (ch) -> mappedChars[ch]
+    home = new RegExp '\\(' + home, 'g'
+  return (framesToPop = 0) ->
+    stack = log.cleanStack Error().stack.slice(6)
+    stack = stack.split('\n').slice(1 + framesToPop).join('\n')
+    home and stack = stack.replace home, '(~/'
+    @write @gray stack
 
 
 if isCLI
@@ -114,12 +129,7 @@ if isCLI
     {warn} = methods
     methods.warn = ->
       warn ...arguments
-
-      err = new Error
-      Error.captureStackTrace err, arguments.callee
-      stack = err.stack
-      console.log stack.slice stack.indexOf('\n') + 1
-      return
+      @trace 1
 
 else
   createWriter = (write) -> ($1, ...args) ->
@@ -203,5 +213,13 @@ if isQuiet
 else
   log = createLog()
   log.create = createLog
+
+
+if isCLI then try
+  cleanStack = require 'clean-stack'
+
+# override this to customize log.trace() output
+log.cleanStack = cleanStack or (stack) -> stack
+
 
 module.exports = log
