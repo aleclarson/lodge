@@ -12,7 +12,7 @@
   },
   "devDependencies": {
     "coffeescript": "^2.3.0",
-    "wch-coffee": "^0.2.0"
+    "wch-coffee": "*"
   },
   "dependencies": {
     "ansi-256-colors": "^1.1.0",
