@@ -164,13 +164,15 @@ else
 if isQuiet or !DEBUG = env.DEBUG
   methods.debug = muted
 else if hasFlag('--debug') or /^(\*|1)$/.test DEBUG
-  methods.debug = createLog
+  methods.debug = (id) ->
+    createLog().prefix log.coal(id)
 else
   DEBUG = DEBUG.replace(/\*/g, '.*').replace(/,/g, '|')
   DEBUG = new RegExp '^(' + DEBUG + ')$'
   methods.debug = (id) ->
-    DEBUG.test(id) and createLog() or quiet
-
+    if DEBUG.test(id)
+      createLog().prefix log.coal(id)
+    else quiet
 
 join = (a, b) ->
   if a then a + ' ' + b else b
