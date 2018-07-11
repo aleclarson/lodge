@@ -24,6 +24,9 @@ log.warn('be careful');
 // print to stderr
 log.error('oh crap');
 
+// print a strack trace
+log.trace();
+
 // clear the console/terminal
 log.clear();
 
@@ -43,7 +46,7 @@ log2.prefix(() => `[${new Date().toISOString()}]`);
 
 The built-in `console` functions are used when the global `window` variable exists. Otherwise, functions with similar behavior are used with the `process.stdout` or `process.stderr` streams.
 
-All loggers inherit the prefix of the main logger, but can also have their own prefix at the same time.
+You may override `log.cleanStack` to customize the output of the `trace` method.
 
 ### Environment variables
 
@@ -87,3 +90,6 @@ foo.prefix = () => `[${new Date().toISOString()}] foo:`
 foo('test') // => '[2018-06-28T20:03:48.892Z] foo: test'
 ```
 
+All loggers inherit the prefix of the main logger, but can also have their own prefix at the same time.
+
+Loggers created with the `debug` method have a default prefix of their identifier with a dark gray color.
