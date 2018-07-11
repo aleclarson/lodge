@@ -4,9 +4,11 @@
   "main": "lib/lodge",
   "license": "MIT",
   "repository": "https://github.com/aleclarson/lodge.git",
+  "files": [
+    "lib"
+  ],
   "scripts": {
-    "build": "coffee-build src -o lib",
-    "prepublishOnly": "prepv -i || true"
+    "build": "coffee-build src -o lib"
   },
   "devDependencies": {
     "coffeescript": "^2.3.0",
