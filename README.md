@@ -13,7 +13,10 @@ log('hello', 'world');
 log('object:', { hello: 'world' });
 
 // first argument can be a format string
-log('string: %s, integer: %i, float: %f, object: %O', 'foo', 1.1, 1.1, { hello: 'world' });
+log('string: %s, object: %O', 100, { hello: 'world' });
+
+// join the given arguments into a formatted string
+log.stylize('string: %s, object: %O', 100, { hello: 'world' });
 
 // ansi colors included
 log(log.red('CODE RED'));
@@ -90,6 +93,6 @@ foo.prefix = () => `[${new Date().toISOString()}] foo:`
 foo('test') // => '[2018-06-28T20:03:48.892Z] foo: test'
 ```
 
-All loggers inherit the prefix of the main logger, but can also have their own prefix at the same time.
+Loggers created by the `create` or `debug` method will inherit the prefix of their ancestors.
 
 Loggers created with the `debug` method have a default prefix of their identifier with a dark gray color.
