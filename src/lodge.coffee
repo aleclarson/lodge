@@ -53,6 +53,7 @@ createLog = ->
   def log, '_parent', value: this if !isTop this
   Object.assign log, methods
 
+methods.create = createLog
 
 methods.trace = do ->
   home = null
@@ -102,6 +103,7 @@ embed = (arg, type) ->
 if isCLI
   isTop = (arg) -> arg is global
 
+  # Format a non-string
   inspect = do ->
     util = require 'util'
     opts = colors: !NO_COLOR, depth: 1
@@ -273,10 +275,8 @@ Object.freeze quiet
 if isQuiet
   log = -> # no-op
   Object.assign log, quiet
-  log.create = muted
 else
   log = createLog()
-  log.create = createLog
 
 
 if isCLI then try
