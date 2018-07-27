@@ -49,6 +49,7 @@ methods =
 
 createLog = ->
   log = (...args) -> log.write ...args
+  def log, '_parent', value: this if !isTop this
   Object.assign log, methods
 
 
@@ -67,6 +68,7 @@ methods.trace = do ->
 
 
 if isCLI
+  isTop = (arg) -> arg is global
 
   inspect = do ->
     util = require 'util'
@@ -130,6 +132,8 @@ if isCLI
       @trace 1
 
 else
+  isTop = (arg) -> arg is window
+
   createWriter = (write) -> ($1, ...args) ->
     if !$0 = getPrefix this
       write $1, ...args
