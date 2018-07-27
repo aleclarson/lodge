@@ -35,8 +35,6 @@ undef = -> # no-op
 muted = -> quiet
 
 quiet = -> # no-op
-quiet.write = undef
-
 colorize quiet, !NO_COLOR
 
 
@@ -195,12 +193,12 @@ else
       configurable: true
 
 
+# Ensure all expected methods exist.
 # Warnings and errors are not disabled by --quiet
-quiet.warn = methods.warn
-quiet.error = methods.error
+Object.assign quiet, methods
 
-# Ensure all expected methods exist
-quiet.debug = methods.debug
+# Quiet overrides
+quiet.write = undef
 quiet.prefix = muted
 quiet.clear = undef
 
