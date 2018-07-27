@@ -44,6 +44,7 @@ methods =
   write: null
   debug: null
   prefix: null
+  stylize: null
   clear: null
   trace: null
 
@@ -66,6 +67,37 @@ methods.trace = do ->
     home and stack = stack.replace home, '(~/'
     @gray stack
 
+# Vararg string formatter
+methods.stylize = (...args) ->
+  output = ''
+  i = 0
+
+  if typeof args[0] is 'string'
+    input = args[i++]
+    offset = 0
+    pattern = /%[dfisO]/g
+    while match = pattern.exec input
+      arg = args[i++]
+      output += input.slice(offset, match.index) + embed arg, match[0]
+      offset = match.index + 2
+    output += input.slice offset
+
+  while i < args.length
+    arg = args[i++]
+    output = join output,
+      if typeof arg is 'string'
+      then arg else inspect arg
+
+  return output
+
+embed = (arg, type) ->
+  switch type
+    when '%s' then String arg
+    when '%O' then inspect arg
+    when '%d', '%f' then Number arg
+    when '%i' then parseInt arg
+    else arg
+
 
 if isCLI
   isTop = (arg) -> arg is global
@@ -75,38 +107,12 @@ if isCLI
     opts = colors: !NO_COLOR, depth: 1
     (arg) -> util.inspect arg, opts
 
-  format = (arg, type) ->
-    switch type
-      when '%s' then String arg
-      when '%O' then inspect arg
-      when '%d', '%f' then Number arg
-      when '%i' then parseInt arg
-      else arg
-
   createWriter = (stream, label) -> (...args) ->
-    i = 0
     prefix = getPrefix this, label
-    output = ''
-
-    if typeof args[0] is 'string'
-      input = args[i++]
-      offset = 0
-      pattern = /%[dfisO]/g
-      while match = pattern.exec input
-        arg = args[i++]
-        output += input.slice(offset, match.index) + format arg, match[0]
-        offset = match.index + 2
-      output += input.slice offset
-
-    while i < args.length
-      arg = args[i++]
-      output = join output,
-        if typeof arg is 'string'
-        then arg else inspect arg
-
-    output and= join prefix, output
-    stream.write output + '\n'
-    return
+    output = log.stylize ...args
+    if output = join prefix, output + '\n'
+      stream.write output
+      return
 
   methods.warn =
     if !NO_WARNINGS
@@ -134,21 +140,45 @@ if isCLI
 else
   isTop = (arg) -> arg is window
 
-  createWriter = (write) -> ($1, ...args) ->
-    if !$0 = getPrefix this
-      write $1, ...args
-      return
+  inspect = do ->
+    {toString} = Object::
+    return (arg) ->
+      str = toString.call arg
+      switch str.slice(8, -1).toLowerCase()
 
-    if !args.length and $1 is ''
-      write $1
-      return
+        when 'null' then 'null'
+        when 'undefined' then 'undefined'
+        when 'array' then JSON.stringify(arg)
 
-    if typeof $1 isnt 'string'
-      write $0, $1, ...args
-      return
+        when 'object'
+          ctr = arg.constructor
+          if !ctr or ctr is Object
+          then JSON.stringify(arg, null, 2)
+          else str
 
-    write $0 + ' ' + $1, ...args
-    return
+        when 'regexp' then arg.toString()
+        when 'date' then arg.toISOString()
+        else str
+
+  createWriter = (stream, label) ->
+    if typeof stream is 'function'
+      stream = write: stream
+
+    return ($1, ...args) ->
+
+      if typeof $1 isnt 'string'
+        args.unshift $1
+        $1 = ''
+
+      if $0 = getPrefix this, label
+        $1 = $0 + ' ' + $1
+
+      if @_debugId
+        $1 = '%c' + @_debugId + '%c ' + $1
+        args.unshift @_debugStyle, ''
+
+      stream.write $1, ...args
+      return
 
   methods.warn =
     if !NO_WARNINGS
@@ -177,15 +207,21 @@ else
     else quiet
 
 join = (a, b) ->
-  if a then a + ' ' + b else b
+  if !a then b or ''
+  else if !b then a
+  else a + ' ' + b
 
 getPrefix = (self, label) ->
-  prefix = self._prefix?() or ''
-  if self isnt log and log._prefix
-    prefix = join log._prefix(), prefix
-  if label
+
+  if prefix = self._prefix
+    prefix = prefix()
+
+  if parent = self._parent
+    prefix = getPrefix parent, prefix
+
+  if label and prefix
   then join prefix, label
-  else prefix
+  else label or prefix or ''
 
 if isQuiet
   methods.prefix = -> this
