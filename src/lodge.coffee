@@ -63,7 +63,7 @@ methods.trace = do ->
     stack = log.cleanStack Error().stack.slice(6)
     stack = stack.split('\n').slice(1 + framesToPop).join('\n')
     home and stack = stack.replace home, '(~/'
-    @write @gray stack
+    @gray stack
 
 
 if isCLI
