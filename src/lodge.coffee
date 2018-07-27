@@ -193,18 +193,42 @@ else
     methods.clear = console.clear
 
 
-if isQuiet or !DEBUG = env.DEBUG
-  methods.debug = muted
+if isQuiet or !(DEBUG = env.DEBUG)
+  methods.debug = (id) ->
+    inst = createLog.call(this).prefix log.coal(id)
+    inst.write = undef
+    inst
+
 else if hasFlag('--debug') or /^(\*|1)$/.test DEBUG
   methods.debug = (id) ->
-    createLog().prefix log.coal(id)
-else
+    createLog.call(this).prefix log.coal(id)
+
+else do ->
   DEBUG = DEBUG.replace(/\*/g, '.*').replace(/,/g, '|')
   DEBUG = new RegExp '^(' + DEBUG + ')$'
-  methods.debug = (id) ->
-    if DEBUG.test(id)
-      createLog().prefix log.coal(id)
-    else quiet
+  methods.debug =
+
+    if isCLI then (id) ->
+      inst = createLog.call(this).prefix log.coal(id)
+      inst.write = undef if !DEBUG.test(id)
+      inst
+
+    else do ->
+      themes = [
+        {text: '#2923EB', bkg: '#E2E1F5'}  # blue
+        {text: '#D61160', bkg: '#EDDAE2'}  # red
+        {text: '#8A8AE5', bkg: '#1B1B4C'}  # dark blue
+        {text: '#67E591', bkg: '#0C4652'}  # dark green
+      ]
+      return (id) ->
+        inst = createLog.call(this)
+        inst.write = undef if !DEBUG.test(id)
+        theme = themes[Math.floor Math.random() * themes.length]
+        def inst, '_debugId', value: id
+        def inst, '_debugStyle', value: """
+          color: #{theme.text}; background: #{theme.bkg}; \
+          border-radius: 3px; padding: 2px;
+        """
 
 join = (a, b) ->
   if !a then b or ''
