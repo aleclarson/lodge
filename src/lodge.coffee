@@ -286,4 +286,5 @@ if isCLI then try
 log.cleanStack = cleanStack or (stack) -> stack
 
 
+Object.defineProperty log, 'default', value: log
 module.exports = log
