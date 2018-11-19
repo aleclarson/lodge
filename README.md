@@ -1,4 +1,9 @@
-# lodge v0.1.0
+# lodge
+
+[![npm](https://img.shields.io/npm/v/lodge.svg)](https://www.npmjs.com/package/lodge)
+[![Bundle size](https://badgen.net/bundlephobia/min/lodge)](https://bundlephobia.com/result?p=lodge)
+[![Install size](https://packagephobia.now.sh/badge?p=lodge)](https://packagephobia.now.sh/result?p=lodge)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/alecdotbiz)
 
 ```js
 const log = require('lodge');
