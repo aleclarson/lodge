@@ -1,21 +1,32 @@
 {
   "name": "lodge",
   "version": "0.1.0",
-  "main": "lib/lodge.js",
   "license": "MIT",
+  "description": "Tiny logging engine",
   "repository": "aleclarson/lodge",
+  "main": "lib/lodge.js",
   "files": [
-    "lib"
+    "lib",
+    "index.d.ts"
   ],
   "scripts": {
     "build": "coffee-build src -o lib"
+  },
+  "dependencies": {
+    "ansi-256-colors": "^1.1.0",
+    "has-flag": "^3.0.0"
   },
   "devDependencies": {
     "coffeescript": "^2.3.0",
     "wch-coffee": "*"
   },
-  "dependencies": {
-    "ansi-256-colors": "^1.1.0",
-    "has-flag": "^3.0.0"
-  }
+  "keywords": [
+    "log",
+    "logs",
+    "logger",
+    "logging",
+    "color",
+    "colors",
+    "chalk"
+  ]
 }
