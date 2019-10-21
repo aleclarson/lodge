@@ -13,7 +13,6 @@
     "build": "coffee-build src -o lib"
   },
   "dependencies": {
-    "ansi-256-colors": "^1.1.0",
     "has-flag": "^3.0.0"
   },
   "devDependencies": {

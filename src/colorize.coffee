@@ -28,14 +28,22 @@ noop = (arg) -> arg
 
 module.exports = (log, colorEnabled) ->
 
-  if colorEnabled
-    ansi = require 'ansi-256-colors'
+  if !colorEnabled
+    log.bold = noop
     Object.keys(colors).forEach (key) ->
-      color = ansi.fg.getRgb ...colors[key]
-      log[key] = (msg) ->
-        if msg is '' then msg else color + msg + ansi.reset
-      return
-
-  else Object.keys(colors).forEach (key) ->
-    log[key] = noop
+      log[key] = noop
     return
+
+  wrap = (a, b, msg) ->
+    '\x1b[' + a + 'm' + msg + '\x1b[' + b + 'm'
+
+  getRgb = ([r, g, b]) ->
+    '38;5;' + (16 + (36 * r) + (6 * g) + b)
+
+  log.bold = (msg) ->
+    if msg is '' then '' else wrap 1, 22, msg
+
+  Object.keys(colors).forEach (key) ->
+    color = getRgb colors[key]
+    log[key] = (msg) ->
+      if msg is '' then '' else wrap color, 0, msg
