@@ -29,6 +29,7 @@ interface IColored {
   gray(str: string): string
   coal(str: string): string
   black(str: string): string
+  bold(str: string): string
 }
 
 declare module 'lodge' {
