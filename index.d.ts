@@ -1,6 +1,6 @@
-type Logger = ILogger & IColored
+export type Logger = ILogger & IColored
 
-interface ILogger {
+export interface ILogger {
   (...args: any[]): void
   warn(...args: any[]): void
   error(...args: any[]): void
@@ -11,7 +11,7 @@ interface ILogger {
   clear(): void
 }
 
-interface IColored {
+export interface IColored {
   red(str: string): string
   blue(str: string): string
   green(str: string): string
@@ -32,9 +32,8 @@ interface IColored {
   bold(str: string): string
 }
 
-declare module 'lodge' {
-  const log: Logger & {
-    cleanStack: (stack: string) => string
-  }
-  export default log
+declare const log: Logger & {
+  cleanStack: (stack: string) => string
 }
+
+export default log
