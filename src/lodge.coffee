@@ -20,7 +20,7 @@ isQuiet =
 NO_COLOR =
   if isCLI and process.stdout.isTTY
     hasFlag('--no-color') or env.NO_COLOR is '1'
-  else env.COLOR isnt '1'
+  else env.COLOR isnt '1' and env.FORCE_COLOR isnt '1'
 
 NO_WARNINGS =
   hasFlag('--no-warnings') or env.NO_WARNINGS is '1'
