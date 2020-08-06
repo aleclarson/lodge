@@ -1,7 +1,7 @@
 dependencies:
   has-flag: 3.0.0
 devDependencies:
-  coffeescript: 2.4.1
+  coffeescript: 2.5.1
   wch-coffee: 0.3.2
 lockfileVersion: 5.1
 packages:
@@ -33,13 +33,13 @@ packages:
     dev: true
     resolution:
       integrity: sha1-+PeLdniYiO858gXNY39o5wISKyw=
-  /coffeescript/2.4.1:
+  /coffeescript/2.5.1:
     dev: true
     engines:
       node: '>=6'
     hasBin: true
     resolution:
-      integrity: sha512-34GV1aHrsMpTaO3KfMJL40ZNuvKDR/g98THHnE9bQj8HjMaZvSrLik99WWqyMhRtbe8V5hpx5iLgdcSvM/S2wg==
+      integrity: sha512-J2jRPX0eeFh5VKyVnoLrfVFgLZtnnmp96WQSLAS8OrLm2wtQLcnikYKe1gViJKDH7vucjuhHvBKKBP3rKcD1tQ==
   /core-util-is/1.0.2:
     dev: true
     resolution:
@@ -219,15 +219,17 @@ packages:
     dev: true
     name: fsx
     resolution:
+      registry: 'https://registry.npmjs.org/'
       tarball: 'https://codeload.github.com/aleclarson/fsx/tar.gz/3fdf4925c7fd2500bb6d794920be9af156b2cbce'
     version: 1.7.0
   github.com/aleclarson/quest/73e990a0ee2415c53674c548a9bc51cda67c448d:
     dev: true
     name: quest
     resolution:
+      registry: 'https://registry.npmjs.org/'
       tarball: 'https://codeload.github.com/aleclarson/quest/tar.gz/73e990a0ee2415c53674c548a9bc51cda67c448d'
     version: 0.6.1
 specifiers:
-  coffeescript: ^2.3.0
+  coffeescript: 2.5.1
   has-flag: ^3.0.0
   wch-coffee: '*'
