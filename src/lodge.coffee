@@ -278,6 +278,7 @@ if isQuiet
 else
   log = createLog()
 
+log.quiet = quiet
 
 if isCLI then try
   cleanStack = require 'clean-stack'

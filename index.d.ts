@@ -34,6 +34,7 @@ export interface IColored {
 
 declare const log: Logger & {
   cleanStack: (stack: string) => string
+  quiet: Logger
 }
 
 export default log
