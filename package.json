@@ -16,7 +16,7 @@
     "has-flag": "^3.0.0"
   },
   "devDependencies": {
-    "coffeescript": "^2.3.0",
+    "coffeescript": "2.5.1",
     "wch-coffee": "*"
   },
   "keywords": [
